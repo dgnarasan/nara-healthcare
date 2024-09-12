@@ -4,10 +4,15 @@ import pandas as pd
 # Initialize Flask app
 app = Flask(__name__)
 
-# Load the dataset (CSV) at the start
+# Load the dataset
 df = pd.read_csv('common_diseases_dataset.csv')
 
-# A simple route to handle disease prediction based on symptoms
+# Root route
+@app.route('/')
+def home():
+    return "Welcome to the Nara Healthcare Bot! Use the /predict_disease endpoint to make predictions."
+
+# Route to handle disease prediction based on symptoms
 @app.route('/predict_disease', methods=['POST'])
 def predict_disease():
     data = request.get_json()
