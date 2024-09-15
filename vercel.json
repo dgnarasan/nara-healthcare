@@ -5,8 +5,5 @@
   ],
   "routes": [
     { "src": "/(.*)", "dest": "app.py" }
-  ],
-  "functions": {
-    "pythonVersion": "3.9"  // Pin Python version to 3.9
-  }
+  ]
 }
