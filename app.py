@@ -1,39 +1,40 @@
 from flask import Flask, request, jsonify
-import os
+import joblib
 
+# Initialize Flask app
 app = Flask(__name__)
 
-# Existing code
-@app.route('/')
-def home():
-    return "Welcome to the Nara Healthcare Bot! Use the /predict_disease endpoint."
+# Load the trained models and symptom encoder
+model_disease = joblib.load('model_disease.pkl')
+model_severity = joblib.load('model_severity.pkl')
+model_treatment = joblib.load('model_treatment.pkl')
+mlb = joblib.load('mlb.pkl')  # Load the symptom encoder
 
-# Function to map symptoms to diseases (using a simple logic for now)
-def predict_from_symptoms(symptoms):
-    # Simple logic to predict disease from symptoms, to be replaced by real model logic
-    if "fever" in symptoms and "chills" in symptoms:
-        return "Flu"
-    elif "itchy" in symptoms and "sneezing" in symptoms:
-        return "Allergies"
-    else:
-        return "Unknown Disease"
-
-# New route for predicting diseases
 @app.route('/predict_disease', methods=['POST'])
 def predict_disease():
-    # Get JSON data from request
     data = request.get_json()
     symptoms = data.get('symptoms')
+
+    # Preprocess the symptoms input using the encoder
+    symptoms_encoded = mlb.transform([symptoms])
+
+    # Predict the disease, severity, and treatment
+    predicted_disease = model_disease.predict(symptoms_encoded)
+    predicted_severity = model_severity.predict(symptoms_encoded)
+    predicted_treatment = model_treatment.predict(symptoms_encoded)
+
+    # Prepare the response
+    response = {
+        'disease': predicted_disease[0],
+        'severity': predicted_severity[0],
+        'treatment': predicted_treatment[0]
+    }
     
-    # Check if symptoms are provided
-    if symptoms:
-        disease = predict_from_symptoms(symptoms)
-        return jsonify({"disease": disease})
-    else:
-        return jsonify({"error": "No symptoms provided"}), 400
+    return jsonify(response)
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
